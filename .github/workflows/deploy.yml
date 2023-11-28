@@ -1,0 +1,19 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  blt:
+    uses: ./.github/workflows/blt.yml
+  deploy:
+    needs: blt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: shuttle-hq/deploy-action@main
+        with:
+          deploy-key: ${{ secrets.SHUTTLE_API_KEY }}
