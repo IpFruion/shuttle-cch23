@@ -1,0 +1,27 @@
+name: Build, Lint, Test
+
+on: workflow_call
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-Dwarnings"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        run: cargo build --verbose
+  lint:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lint
+        run: cargo clippy --all-targets --all-features
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: cargo test --verbose
