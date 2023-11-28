@@ -7,35 +7,28 @@ env:
   RUSTFLAGS: "-Dwarnings"
 
 jobs:
-  build:
+  build-lint-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Cache Dependencies
+        id: cache-cargo
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-cargo-deps
+        with:
+          path: ./target/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('./Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - if: ${{ steps.cache-cargo.outputs.cache-hit != 'true' }}
+        name: Build Dependencies
+        run: ./install_deps.sh
       - name: Build
         run: cargo build --verbose
-      - uses: actions/cache@v3
-        with:
-          path: ./target/
-          key: cargo-deps
-  lint:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/cache@v3
-        with:
-          path: ./target/
-          key: cargo-deps
       - name: Lint
         run: cargo clippy --all-targets --all-features
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/cache@v3
-        with:
-          path: ./target/
-          key: cargo-deps
       - name: Test
         run: cargo test --verbose
