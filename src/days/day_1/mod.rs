@@ -14,7 +14,7 @@ impl FromStr for Vals {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Vals(
-            s.split("/")
+            s.split('/')
                 .map(|v| v.parse::<usize>().map_err(|_| StatusCode::BAD_REQUEST))
                 .collect::<Result<Vec<usize>, _>>()?,
         ))
@@ -35,8 +35,8 @@ async fn task(Path(vals): Path<Vals>) -> Result<String, StatusCode> {
     let mut iter = vals.0.into_iter();
     let mut output = iter.next().ok_or(StatusCode::BAD_REQUEST)?;
 
-    while let Some(v) = iter.next() {
-        output = output ^ v;
+    for v in iter {
+        output ^= v;
     }
 
     Ok(output.pow(3).to_string())
